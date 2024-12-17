@@ -1,18 +1,83 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+import { Button } from "@/components/ui/button";
+import React from "react";
+import { useNavigate } from "react-router-dom";
 
-const NotFound = () => {
-    return (
-        <div className="h-screen flex items-center justify-center flex-col bg-gray-100">
-            <svg className="w-48 h-48 mb-8 text-gray-700 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <h1 className="text-6xl font-bold text-gray-800 mb-4">404</h1>
-            <p className="text-xl text-gray-600 mb-8">Oops! Page not found</p>
-            <Link to="/" className="px-6 py-3 bg-blue-600 text-white rounded-lg transition-transform hover:scale-105 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
-                Go Home
-            </Link>
+function NotFoundPage() {
+  const navigate = useNavigate();
+
+  return (
+    <div className="min-h-screen bg-gradient-to-r from-gray-100 via-white to-gray-50 bg-cover bg-no-repeat">
+      <main className="container mx-auto px-6 py-12 flex justify-center items-center h-screen flex-col">
+        <div className="text-center">
+          <h1 className="text-6xl font-extrabold text-gray-800 mb-4">
+            404 <span className="text-purple-500">Page Not Found</span>
+          </h1>
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+            Sorry, the page you're looking for doesn't exist or has been moved.
+          </p>
+          <div className="flex items-center justify-center h-20 mt-6 mb-20">
+            <div className="flex space-x-8">
+              <svg
+                className="w-10 h-10"
+                viewBox="0 0 68 79"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M53.4998 14.7002L35.4998 32.7002L17.3998 14.7002L3.2998 28.8002L21.2998 46.9002L3.2998 64.9002L17.3998 79.0002L35.4998 61.0002L53.4998 79.0002L67.5998 64.9002L49.5998 46.9002L67.5998 28.8002L53.4998 14.7002Z"
+                  fill="currentColor"
+                />
+                <path
+                  d="M53.4998 14.7002L35.4998 32.7002L17.3998 14.7002L3.2998 28.8002L21.2998 46.9002L3.2998 64.9002L17.3998 79.0002L35.4998 61.0002L53.4998 79.0002L67.5998 64.9002L49.5998 46.9002L67.5998 28.8002L53.4998 14.7002Z"
+                  fill="currentColor"
+                  fillOpacity="0.2"
+                />
+              </svg>
+              <svg
+                className="w-10 h-10"
+                viewBox="0 0 64 68"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path d="M1 68L30.9 14.4L62.3 67.1L1 68Z" fill="currentColor" />
+                <path
+                  d="M1 68L30.9 14.4L62.3 67.1L1 68Z"
+                  fill="currentColor"
+                  fillOpacity="0.2"
+                />
+              </svg>
+            </div>
+          </div>
         </div>
-    )
+        <div className="text-center mt-16">
+          <button
+            onClick={() => {
+              console.log("Button clicked!");
+              navigate("/");
+            }}
+            className="bg-purple-400 text-white py-3 mb-8 px-8 rounded-full font-medium transition-transform duration-300 hover:scale-105 hover:bg-purple-700 cursor-pointer z-20"
+          >
+            Go Back Home
+          </button>
+        </div>
+
+        <div className="fixed bottom-0 left-0 right-0">
+          <svg
+            className="w-full"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 1440 320"
+            fill="currentColor"
+          >
+            <path
+              fillOpacity="1"
+              d="M0,128L1440,224L1440,320L0,320Z"
+              className="text-gray-200"
+            ></path>
+          </svg>
+        </div>
+      </main>
+    </div>
+  );
 }
-export default NotFound;
+
+export default NotFoundPage;
