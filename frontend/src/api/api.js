@@ -1,8 +1,11 @@
 import axios from "axios";
 
-export default api = axios.create({
+const token = localStorage.getItem("token")
+const api = new axios.create({
   baseURL: import.meta.env.VITE_BACKEND_URL,
-  headers: {
+  headers: {  
     "Content-Type": "application/json",
+    Authorization : `Bearer ${token}`
   },
 });
+export default api;   
