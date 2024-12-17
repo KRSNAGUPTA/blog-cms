@@ -19,7 +19,7 @@ app.use(cors({ origin: process.env.CORS_ORIGIN }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get("/", (req, res) => {
+app.get("/api", (req, res) => {
   res.send("API is running....");
 });
 
@@ -31,7 +31,7 @@ app.use("/api/auth", authRoutes);
 app.get("/api/user/status", (req, res) => {
   res.send("API for User is running....");
 });
-app.use("/api/user", userRoutes);
+app.use("/api/user",authMiddleware,  userRoutes);
 
 app.get(
   "/api/admin/status",
