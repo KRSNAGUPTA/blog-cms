@@ -19,6 +19,9 @@ app.use(cors({ origin: process.env.CORS_ORIGIN }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.get("/",(req,res)=>{
+  res.send("Welcome to BlogHub")
+})
 app.get("/api", (req, res) => {
   res.send("API is running....");
 });
