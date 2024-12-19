@@ -1,35 +1,36 @@
-import React, { createContext, useState, useEffect } from "react";
+import React, { createContext, useState, useEffect, useContext } from "react";
 import api from "@/api/api";
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // Add loading state
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (token) {
-      api
-        .get("/api/user/getuser", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-        .then((response) => {
+
+    const fetchUserData = async () => {
+      try {
+        if (token) {
+          const response = await api.get("/api/user/getuser", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
           const userData = response.data;
           setUser(userData);
           localStorage.setItem("user", JSON.stringify(userData));
-        })
-        .catch((error) => {
-          console.error("Error fetching user data:", error);
-        })
-        .finally(() => {
-          setLoading(false); // Set loading to false once done
-        });
-    } else {
-      setLoading(false); // If no token, set loading to false
-    }
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        logout(); // Clear invalid token or user data
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
   }, []);
 
   const login = async (token) => {
@@ -45,6 +46,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem("user", JSON.stringify(userData));
     } catch (error) {
       console.error("Error during login:", error);
+      throw error;
     }
   };
 
@@ -62,5 +64,9 @@ export const AuthProvider = ({ children }) => {
 };
 
 export const useAuth = () => {
-  return React.useContext(AuthContext);
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
 };
