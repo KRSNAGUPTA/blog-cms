@@ -1,7 +1,7 @@
 import { Router } from "express";
 import {
   getAllPosts,
-  getPostById,
+  getPostBySlug, 
   deletePost,
   updatePost,
   createPost,
@@ -17,27 +17,18 @@ import authMiddleware from "../middlewares/authMiddleware.js";
 
 const router = Router();
 
-router.get("/", getAllPosts);
-router.get("/:id", getPostById);
-router.post("/", authMiddleware, authorizeRole("admin", "editor"), createPost);
-router.patch(
-  "/:id",
-  authMiddleware,
-  authorizeRole("admin", "editor"),
-  updatePost
-);
-router.delete(
-  "/:id",
-  authMiddleware,
-  authorizeRole("admin", "editor"),
-  deletePost
-);
-router.patch("/:id/like", authMiddleware, likePost);
-router.patch("/:id/dislike", authMiddleware, dislikePost);
-router.patch("/:id/comment", authMiddleware, commentOnPost);
-router.patch("/:id/modifyComment", authMiddleware, modifyComment);
-router.delete("/:id/deleteComment", authMiddleware, deleteComment);
+router.get("/u/:username", getUserPosts); 
 
-router.get("/user/:username", getUserPosts);
+router.get("/", getAllPosts);
+router.get("/:slug", getPostBySlug);
+router.post("/", authMiddleware, authorizeRole("admin", "editor"), createPost);
+router.patch("/:slug", authMiddleware, authorizeRole("admin", "editor"), updatePost);
+router.delete("/:slug", authMiddleware, authorizeRole("admin", "editor"), deletePost);
+
+router.post("/:slug/like", authMiddleware, likePost); 
+router.post("/:slug/dislike", authMiddleware, dislikePost);
+router.post("/:slug/comment", authMiddleware, commentOnPost);
+router.patch("/:slug/comment/:commentId", authMiddleware, modifyComment); 
+router.delete("/:slug/comment/:commentId", authMiddleware, deleteComment); 
 
 export default router;
