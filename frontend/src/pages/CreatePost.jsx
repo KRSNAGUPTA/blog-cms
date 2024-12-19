@@ -1,25 +1,32 @@
-import React, { useState, useContext } from "react";
-import { Editor } from "@toast-ui/react-editor";
+import React, { useState, useContext, useRef } from "react";
 import { AuthContext } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import "@toast-ui/editor/dist/toastui-editor.css";
 import { Toaster } from "@/components/ui/toaster";
 import { toast } from "../hooks/use-toast";
 import Header from "@/components/Header";
 import api from "@/api/api";
 import { ToastAction } from "@/components/ui/toast";
+import { Jodit } from "jodit";
+import JoditEditor from "jodit-react";
+
 
 const CreatePostPage = () => {
   const { user } = useContext(AuthContext);
   const [title, setTitle] = useState("");
   const [tags, setTags] = useState("");
+  const [content, setContent] = useState(""); 
   const navigate = useNavigate();
-
-  const editorRef = React.useRef();
-
+  const editor = useRef(null);
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const content = editorRef.current.getInstance().getMarkdown();
+    if (!title) {
+      toast({
+        title: "Title required",
+        description: "Please enter a title for your post.",
+      });
+      return;
+    }
+
     const newPost = {
       title,
       content,
@@ -38,15 +45,13 @@ const CreatePostPage = () => {
         toast({
           title: "Post created successfully",
         });
-        console.log(res.data);
         navigate(`/post/${res.data.post.slug}`);
       }
-      console.log(`Got Response ${res}`);
     } catch (error) {
       if (error.status === 403) {
         toast({
           title: "Reader can't post",
-          description: "Change your role through Profile",
+          description: "Change your role through Profile.",
           variant: "destructive",
           action: (
             <ToastAction
@@ -69,7 +74,7 @@ const CreatePostPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <main className="container mx-auto px-6  py-12 relative">
+      <main className="container mx-auto px-6 py-12 relative">
         <div className="text-center mt-10 z-10 relative">
           <h1 className="text-5xl font-extrabold text-gray-800 mb-4">
             Create Your New Blog Post
@@ -79,10 +84,8 @@ const CreatePostPage = () => {
           </p>
         </div>
 
-        {/* Toast Notification */}
         <Toaster />
 
-        {/* Blog Post Form */}
         <form onSubmit={handleSubmit} className="space-y-6 mt-12 z-10 relative">
           <div className="mb-4">
             <label className="block text-lg font-medium text-gray-700 mb-2">
@@ -93,7 +96,7 @@ const CreatePostPage = () => {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-full p-3 border border-gray-300 rounded-lg"
-              required
+              placeholder="Enter the title of your post"
             />
           </div>
 
@@ -102,27 +105,23 @@ const CreatePostPage = () => {
             <label className="block text-lg font-medium text-gray-700 mb-2">
               Content
             </label>
-            <Editor
-              initialValue="Write here...."
-              previewStyle="vertical"
-              height="400px"
-              initialEditType="markdown"
-              useCommandShortcut={true}
-              ref={editorRef}
-            />
+            <JoditEditor
+            ref={editor}
+            value={content}
+            onChange={(val)=>setContent(val)}/>
           </div>
 
           {/* Tags */}
           <div className="mb-4">
             <label className="block text-lg font-medium text-gray-700 mb-2">
-              Tags (comma separated)
+              Tags (comma-separated)
             </label>
             <input
               type="text"
               value={tags}
               onChange={(e) => setTags(e.target.value)}
               className="w-full p-3 border border-gray-300 rounded-lg active:shadow-lg"
-              placeholder="#Blog #Content"
+              placeholder="#Blog, #Content"
             />
           </div>
 

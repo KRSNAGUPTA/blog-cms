@@ -3,133 +3,565 @@ import Header from "@/components/Header";
 import { AuthContext } from "@/context/AuthContext";
 import api from "@/api/api";
 import { useNavigate } from "react-router-dom";
-const userStats = {
-  totalUser: 5,
-  totalPost: 7,
-  totalAdmin: 2,
-};
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Toaster } from "@/components/ui/toaster";
+import { toast } from "../hooks/use-toast";
+import { Search, Users, FileText, UserPlus, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import formatDate from "@/utils/FormatData";
+
+const StatsSkeleton = () => (
+  <div className="space-y-3">
+    <Skeleton className="h-6 w-3/4" />
+    <Skeleton className="h-10 w-1/3" />
+  </div>
+);
+
+const TableRowSkeleton = () => (
+  <TableRow>
+    <TableCell>
+      <Skeleton className="h-8 w-8 rounded-full" />
+    </TableCell>
+    <TableCell>
+      <Skeleton className="h-4 w-24" />
+    </TableCell>
+    <TableCell>
+      <Skeleton className="h-4 w-32" />
+    </TableCell>
+    <TableCell>
+      <Skeleton className="h-6 w-16" />
+    </TableCell>
+    <TableCell>
+      <Skeleton className="h-4 w-40" />
+    </TableCell>
+    <TableCell>
+      <Skeleton className="h-4 w-12" />
+    </TableCell>
+    <TableCell>
+      <Skeleton className="h-4 w-24" />
+    </TableCell>
+    <TableCell>
+      <Skeleton className="h-4 w-24" />
+    </TableCell>
+  </TableRow>
+);
+
+const RequestRowSkeleton = () => (
+  <TableRow>
+    <TableCell>
+      <Skeleton className="h-4 w-24" />
+    </TableCell>
+    <TableCell>
+      <Skeleton className="h-4 w-40" />
+    </TableCell>
+    <TableCell>
+      <Skeleton className="h-4 w-24" />
+    </TableCell>
+    <TableCell>
+      <div className="flex gap-2">
+        <Skeleton className="h-9 w-20" />
+        <Skeleton className="h-9 w-20" />
+      </div>
+    </TableCell>
+  </TableRow>
+);
 
 function AdminDashboard() {
-  const { user, loading } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
   const [allUsers, setAllUsers] = useState([]);
   const [allPosts, setAllPosts] = useState([]);
+  const [bloggerReq, setBloggerReq] = useState([]);
+  const [username, setUserName] = useState("");
+  const [role, setRole] = useState("");
+  const [userData, setUserData] = useState(null);
+  const [isLoading, setIsLoading] = useState({
+    websiteData: true,
+    userSearch: false,
+    roleUpdate: false,
+    bloggerRequests: true,
+  });
   const navigate = useNavigate();
-  useEffect(() => {
-    const fetchWebsiteData = async () => {
-      try {
-        const response = await api.get("/api/admin/webstatus");
-        const websiteStats = response.data.websiteStats;
-        setAllPosts(websiteStats.postList);
-        setAllUsers(websiteStats.userList);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
 
+  useEffect(() => {
     fetchWebsiteData();
+    fetchBloggerRequests();
   }, []);
 
-  useEffect(() => {
-    console.log("Updated allUsers:", allUsers);
-  }, [allUsers]);
+  const fetchWebsiteData = async () => {
+    try {
+      const response = await api.get("/api/admin/webstatus");
+      setAllPosts(response.data.websiteStats.postList);
+      setAllUsers(response.data.websiteStats.userList);
+    } catch (error) {
+      toast({
+        title: "Error fetching website data",
+        description: error.response?.data?.message || "Please try again later",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading((prev) => ({ ...prev, websiteData: false }));
+    }
+  };
+
+  const handleBloggerAccept = async (username) => {
+    try {
+      const data = { username };
+      const res = await api.post("/api/admin/upgrade-accept", data);
+      if (res) {
+        toast({
+          title: "Role changed to editor",
+        });
+      }
+      fetchBloggerRequests();
+      fetchWebsiteData(); // Refresh user list after role change
+    } catch (error) {
+      toast({
+        title: "Failed to Accept",
+        description: error.response?.data?.message || "Please try again later",
+        variant: "destructive",
+      });
+      console.log(error);
+    }
+  };
+
+  const handleBloggerReject = async (username) => {
+    try {
+      const data = { username };
+      const res = await api.post("/api/admin/upgrade-reject", data);
+      if (res) {
+        toast({
+          title: "Request rejected successfully",
+        });
+      }
+      fetchBloggerRequests();
+    } catch (error) {
+      toast({
+        title: "Failed to Reject",
+        description: error.response?.data?.message || "Please try again later",
+        variant: "destructive",
+      });
+      console.log(error);
+    }
+  };
+
+  const handleRoleChange = async () => {
+    if (!username.trim()) {
+      toast({
+        title: "Invalid Input",
+        description: "Please enter a username",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading((prev) => ({ ...prev, userSearch: true }));
+    try {
+      const res = await api.get(`/api/user/u/${username.trim()}`);
+      if (res.status === 200 && res.data.user) {
+        setUserData(res.data.user);
+        setRole(res.data.user.role);
+      }
+    } catch (error) {
+      toast({
+        title: "User Not Found",
+        description: `No user found with username: ${username}`,
+        variant: "destructive",
+      });
+      setUserData(null);
+      setRole("");
+    } finally {
+      setIsLoading((prev) => ({ ...prev, userSearch: false }));
+    }
+  };
+
+  const roleChange = async () => {
+    if (!role || !username || !userData) {
+      toast({
+        title: "Invalid Operation",
+        description: "Please select a role and ensure user is valid",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (role === userData.role) {
+      toast({
+        title: "No Change Required",
+        description: "User already has this role",
+        variant: "default",
+      });
+      return;
+    }
+
+    setIsLoading((prev) => ({ ...prev, roleUpdate: true }));
+    try {
+      const res = await api.patch("/api/admin/updaterole", { username, role });
+      if (res.status === 200) {
+        toast({
+          title: "Success",
+          description: `Updated ${username}'s role to ${role}`,
+          variant: "default",
+        });
+        setUserData({ ...userData, role });
+        fetchWebsiteData();
+      }
+    } catch (error) {
+      toast({
+        title: "Failed to Update Role",
+        description: error.response?.data?.message || "Please try again later",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading((prev) => ({ ...prev, roleUpdate: false }));
+    }
+  };
+
+  const fetchBloggerRequests = async () => {
+    try {
+      const res = await api.get("/api/admin/request");
+      setBloggerReq(res.data.requests || []);
+    } catch (error) {
+      toast({
+        title: "Error fetching requests",
+        description: "Failed to load blogger requests",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading((prev) => ({ ...prev, bloggerRequests: false }));
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-gray-100 via-white to-gray-50">
       <Header />
-      <main className="container mx-auto px-6 py-12">
-        <div className="text-center mt-12 mb-8">
-          <h1 className="text-4xl font-extrabold text-gray-800 mb-4">
-            Admin Dashboard
-          </h1>
-          <p className="text-lg text-gray-600">
-            Welcome,
-            <span className="text-purple-600">
-              {" "}
-              {user ? user.username : "Admin"}
-            </span>{" "}
-            !
-          </p>
-        </div>
-        <div className="flex justify-around">
-          <div className="flex flex-col justify-center">
-            <div>
-              <h2>All Users</h2>
-              <h4>{allUsers.length}</h4>
-            </div>
-            <div>
-              <h2>Total Posts</h2>
-              <h4>{allPosts.length}</h4>
-            </div>
-            <div>Manage Role</div>
-            <div>Blogger Request</div>
+      <Toaster />
+      <main className="container mx-auto px-4 py-8">
+        <div className="space-y-8">
+          <section className="text-center">
+            <h1 className="text-4xl font-extrabold text-gray-800 mb-2">
+              Admin Dashboard
+            </h1>
+            <p className="text-lg text-gray-600">
+              Welcome back,{" "}
+              <span className="text-purple-600 font-semibold">
+                {user?.username}
+              </span>
+            </p>
+          </section>
+
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Users
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isLoading.websiteData ? (
+                  <StatsSkeleton />
+                ) : (
+                  <>
+                    <div className="text-3xl font-bold">{allUsers.length}</div>
+                    <p className="text-sm text-gray-500">
+                      Total registered users
+                    </p>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Posts
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isLoading.websiteData ? (
+                  <StatsSkeleton />
+                ) : (
+                  <>
+                    <div className="text-3xl font-bold">{allPosts.length}</div>
+                    <p className="text-sm text-gray-500">
+                      Total published posts
+                    </p>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <UserPlus className="h-5 w-5" />
+                  Requests
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isLoading.bloggerRequests ? (
+                  <StatsSkeleton />
+                ) : (
+                  <>
+                    <div className="text-3xl font-bold">
+                      {bloggerReq.length}
+                    </div>
+                    <p className="text-sm text-gray-500">
+                      Pending blogger requests
+                    </p>
+                  </>
+                )}
+              </CardContent>
+            </Card>
           </div>
-          <div className="flex flex-col justify-center">
-            <div>Chart-</div>
-            <div>
-              <table className="border-collapse border border-gray-400">
-                <thead>
-                  <tr>
-                    <th className="border border-gray-400 px-2 py-1">Avatar</th>
-                    <th className="border border-gray-400 px-2 py-1">
-                      Username
-                    </th>
-                    <th className="border border-gray-400 px-2 py-1">
-                      Full Name
-                    </th>
-                    <th className="border border-gray-400 px-2 py-1">Role</th>
-                    <th className="border border-gray-400 px-2 py-1">Email</th>
-                    <th className="border border-gray-400 px-2 py-1">
-                      Total Posts
-                    </th>
-                    <th className="border border-gray-400 px-2 py-1">
-                      Joined On
-                    </th>
-                    <th className="border border-gray-400 px-2 py-1">
-                      Last Login
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {allUsers.map((user, index) => (
-                    <tr key={index}>
-                      <td className="border border-gray-400 px-2 py-1">
-                        <img
-                          src={user.avatar}
-                          alt="avatar"
-                          height={30}
-                          width={30}
-                        />
-                      </td>
-                      <td
-                        className="border border-gray-400 px-2 py-1 hover:cursor-pointer"
-                        onClick={() => navigate(`/u/${user.username}`)}
-                      >
-                        {user.username}
-                      </td>
-                      <td className="border border-gray-400 px-2 py-1">
-                        {user.name}
-                      </td>
-                      <td className="border border-gray-400 px-2 py-1">
-                        {user.role}
-                      </td>
-                      <td className="border border-gray-400 px-2 py-1">
-                        {user.email}
-                      </td>
-                      <td className="border border-gray-400 px-2 py-1">
-                        {user.totalPosts}
-                      </td>
-                      <td className="border border-gray-400 px-2 py-1">
-                        {user.createdAt}
-                      </td>
-                      <td className="border border-gray-400 px-2 py-1">
-                        {user.lastLogin}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Manage User Roles</CardTitle>
+              <CardDescription>
+                Search for users and modify their roles
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <Label htmlFor="username">Username</Label>
+                    <Input
+                      id="username"
+                      value={username}
+                      onChange={(e) => setUserName(e.target.value)}
+                      placeholder="Enter username to search"
+                    />
+                  </div>
+                  <div className="flex items-end">
+                    <Button
+                      onClick={handleRoleChange}
+                      disabled={isLoading.userSearch}
+                    >
+                      {isLoading.userSearch ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Search className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+
+                {userData && (
+                  <div className="space-y-4">
+                    <div className="p-4 bg-gray-50 rounded-lg">
+                      <p className="text-sm text-gray-600">
+                        Current Role:{" "}
+                        <span className="font-semibold">{userData.role}</span>
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        Email: {userData.email}
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>New Role</Label>
+                      <Select value={role} onValueChange={setRole}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select new role" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="admin">Admin</SelectItem>
+                          <SelectItem value="editor">Editor</SelectItem>
+                          <SelectItem value="reader">Reader</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <Button
+                      onClick={roleChange}
+                      className="w-full"
+                      disabled={isLoading.roleUpdate}
+                    >
+                      {isLoading.roleUpdate ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Updating...
+                        </>
+                      ) : (
+                        "Update Role"
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Blogger Requests</CardTitle>
+              <CardDescription>
+                Pending requests for blogger roles
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isLoading.bloggerRequests ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Username</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {[1, 2, 3].map((_, index) => (
+                      <RequestRowSkeleton key={index} />
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : bloggerReq.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Username</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {bloggerReq.map((request, index) => (
+                      <TableRow key={index}>
+                        <TableCell className="font-medium">
+                          {request.username}
+                        </TableCell>
+                        <TableCell>{request.email}</TableCell>
+                        <TableCell>{formatDate(request.createdAt)}</TableCell>
+                        <TableCell>
+                          <Button
+                            className="rounded-full mx-2"
+                            onClick={() =>
+                              handleBloggerAccept(request.username)
+                            }
+                          >
+                            Accept
+                          </Button>
+                          <Button
+                            variant="outline"
+                            className="rounded-full mx-2"
+                            onClick={() =>
+                              handleBloggerReject(request.username)
+                            }
+                          >
+                            Reject
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <p className="text-center text-gray-500 py-4">
+                  No pending requests
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>All Users</CardTitle>
+              <CardDescription>
+                Complete list of registered users
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Avatar</TableHead>
+                      <TableHead>Username</TableHead>
+                      <TableHead>Full Name</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Posts</TableHead>
+                      <TableHead>Joined</TableHead>
+                      <TableHead>Last Login</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {isLoading.websiteData
+                      ? // Show 5 skeleton rows while loading
+                        [...Array(5)].map((_, index) => (
+                          <TableRowSkeleton key={index} />
+                        ))
+                      : allUsers.map((user, index) => (
+                          <TableRow key={index}>
+                            <TableCell>
+                              <img
+                                src={user.avatar}
+                                alt="avatar"
+                                className="h-8 w-8 rounded-full"
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                variant="link"
+                                onClick={() => navigate(`/u/${user.username}`)}
+                              >
+                                {user.username}
+                              </Button>
+                            </TableCell>
+                            <TableCell>{user.name}</TableCell>
+                            <TableCell>
+                              <span
+                                className={`px-2 py-1 rounded-full text-xs ${
+                                  user.role === "admin"
+                                    ? "bg-purple-100 text-purple-800"
+                                    : user.role === "editor"
+                                    ? "bg-blue-100 text-blue-800"
+                                    : "bg-gray-100 text-gray-800"
+                                }`}
+                              >
+                                {user.role}
+                              </span>
+                            </TableCell>
+                            <TableCell>{user.email}</TableCell>
+                            <TableCell>{user.totalPosts}</TableCell>
+                            <TableCell>{formatDate(user.createdAt)}</TableCell>
+                            <TableCell>{formatDate(user.lastLogin)}</TableCell>
+                          </TableRow>
+                        ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </main>
     </div>
