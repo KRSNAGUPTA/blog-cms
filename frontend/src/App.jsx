@@ -8,6 +8,10 @@ import SignUp from "./pages/SignUp";
 import ProfilePage from "./pages/Profile";
 import ProtectedRoute from "./utils/ProtectedRoute";
 import CreateBlogPage from "./pages/CreatePost";
+import PostPage from "./pages/PostPage";
+import AdminRoute from "./utils/AdminRoutes";
+import AdminDashboard from "./pages/AdminDashboard";
+import UserPublicAdminProfile from "./pages/UserPublicAdminProfile";
 
 function App() {
   return (
@@ -18,6 +22,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
+            <Route path="/post/:slug" element={<PostPage />} />
             <Route
               path="/profile"
               element={
@@ -27,13 +32,30 @@ function App() {
               }
             />
             <Route
+              path="/u/:username"
+              element={
+                  <UserPublicAdminProfile />
+              }
+            />
+            <Route
               path="/create"
               element={
                 <ProtectedRoute>
-                  <CreateBlogPage/>
+                  <CreateBlogPage />
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <AdminRoute>
+                    <AdminDashboard />
+                  </AdminRoute>
+                </ProtectedRoute>
+              }
+            />
+
             <Route path="/*" element={<NotFound />} />
           </Routes>
         </Router>
