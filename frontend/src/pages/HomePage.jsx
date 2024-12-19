@@ -1,37 +1,9 @@
 import Header from "@/components/Header";
 import React, { useContext, useEffect } from "react";
-import BlogPost from "@/components/BlogPost";
+// import BlogPost from "@/components/BlogPost";
 import { AuthContext } from "@/context/AuthContext";
 function HomePage() {
-  const topPost = [
-    {
-      id: 1,
-      title: "The Art of Writing",
-      content:
-        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Aperiam nostrum, odio sed illo voluptates ab quo, id nihil magni temp",
-      authorUsername: "John Doe",
-      likesCount: 12,
-      dislikesCount: 6,
-    },
-    {
-      id: 2,
-      title: "The Power of React",
-      content:
-        "Discover how React empowers developers to create fast, dynamic, and scalable web apps.",
-      authorUsername: "Jane Doe",
-      likesCount: 20,
-      dislikesCount: 3,
-    },
-    {
-      id: 3,
-      title: "The Future of AI",
-      content:
-        "Dive into the world of artificial intelligence and explore its transformative potential.",
-      authorUsername: "John Smith",
-      likesCount: 15,
-      dislikesCount: 5,
-    },
-  ];
+  
   const { user, loading } = useContext(AuthContext);
   return (
     <div className="min-h-screen bg-gradient-to-r from-gray-100 via-white to-gray-50">
@@ -156,7 +128,7 @@ function HomePage() {
           </svg>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-36">
+        {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-36">
           {topPost.map((post) => (
             <BlogPost
               key={post.id}
@@ -167,7 +139,7 @@ function HomePage() {
               dislikesCount={post.dislikesCount}
             />
           ))}
-        </div>
+        </div> */}
 
         {/* Call-to-Action Button */}
         <div className="text-center mt-16">
