@@ -57,14 +57,16 @@ const login = async (req, res) => {
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
-    
+
     const payload = {
       user: {
         id: user._id,
         role: user.role,
-        username:user.username
+        username: user.username,
       },
     };
+    user.lastLogin = Date.now();
+    await user.save();
 
     const token = jwt.sign(
       payload,
