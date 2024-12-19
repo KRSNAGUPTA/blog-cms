@@ -34,7 +34,7 @@ app.use("/api/auth", authRoutes);
 app.get("/api/user/status", (req, res) => {
   res.send("API for User is running....");
 });
-app.use("/api/user",authMiddleware,  userRoutes);
+app.use("/api/user",  userRoutes);
 
 app.get(
   "/api/admin/status",
