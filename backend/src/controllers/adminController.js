@@ -1,3 +1,4 @@
+import Post from "../models/postModel.js";
 import User from "../models/userModel.js";
 
 const changeRole = async (req, res) => {
@@ -22,5 +23,27 @@ const changeRole = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+const getWebsiteStats = async (req, res) => {
+  try {
+    const users = await User.find().select("-password"); // Fetch all users excluding passwords
+    const posts = await Post.find(); // Fetch all posts
 
-export { changeRole };
+    const websiteStats = {
+      totalUsers: users.length, // Total number of users
+      userList: users, // All user data
+      totalPosts: posts.length, // Total number of posts
+      postList: posts, // All post data
+    };
+
+    res.status(200).json({
+      message: "Fetched all website data successfully",
+      websiteStats,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+export { changeRole, getWebsiteStats };
