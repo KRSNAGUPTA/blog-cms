@@ -39,15 +39,51 @@ const getUser = async (req, res) => {
 
 const upgradeToEditor = async (req, res) => {
   try {
-    const { id } = req.user.id;
-    const user = await User.findById(id);
+    const { username } = req.body;
+    const user = await User.findOne({
+      username: username,
+    });
     if (!user) {
-      res.status(401).json({
+      return res.status(401).json({
         message: "User not found",
       });
     }
     user.role = "editor";
-    await User.save();
+    await user.save();
+    const isDeleted = await ReqEditor.findOneAndDelete({
+      username: username,
+    });
+    if (!isDeleted) {
+      return res.status(400).json({
+        message: "Failed to reject",
+      });
+    }
+    return res.status(200).json({
+      message: "Role changed to editor",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+const rejectUpgrade = async (req, res) => {
+  try {
+    const { username } = req.body;
+    const user = await User.findOne(username);
+    if (!user) {
+      return res.status(401).json({
+        message: "User not found",
+      });
+    }
+    const isDeleted = await ReqEditor.findByIdAndDelete(id);
+    if (!isDeleted) {
+      return res.status(400).json({
+        message: "Failed to reject",
+      });
+    }
+    return res.status(200).jaon({
+      message: "Request is rejected successfully",
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
@@ -63,10 +99,16 @@ const reqEditor = async (req, res) => {
         message: "User information is incomplete",
       });
     }
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(400).json({
+        message: "No user found",
+      });
+    }
 
     const result = await ReqEditor.findOneAndUpdate(
       { userId: id },
-      { $setOnInsert: { userId: id, username } },
+      { $setOnInsert: { userId: id, username, email: user.email } },
       { upsert: true, new: false }
     );
 
@@ -93,6 +135,7 @@ const getUserByUsername = async (req, res) => {
     const user = await User.findOne({
       username: username,
     }).select("-password -updatedAt -v");
+    console.log(`Got user details with username : ${user}`);
     res.status(200).json({
       message: "Details fetched",
       user,
@@ -105,4 +148,11 @@ const getUserByUsername = async (req, res) => {
   }
 };
 
-export { getUsers, getUser, upgradeToEditor, reqEditor, getUserByUsername };
+export {
+  getUsers,
+  getUser,
+  upgradeToEditor,
+  reqEditor,
+  getUserByUsername,
+  rejectUpgrade,
+};
