@@ -1,12 +1,12 @@
 import { Router } from "express";
-import { changeRole, getWebsiteStats } from "../controllers/adminController.js";
+import { changeRole, getWebsiteStats, bloggerRequest } from "../controllers/adminController.js";
 import {  upgradeToEditor } from "../controllers/userController.js";
-import authMiddleware from "../middlewares/authMiddleware.js";
-import authorizeRole from "../middlewares/roalMiddleware.js";
 
 const router = Router();
 
 router.patch("/updateRole", changeRole);
-router.post("/upgrade", authMiddleware, authorizeRole("admin"), upgradeToEditor);
-router.get("/webStatus", authMiddleware, authorizeRole("admin"), getWebsiteStats);
+router.get("/request" , bloggerRequest)
+router.post("/upgrade-accept", upgradeToEditor);
+router.post("/upgrade-reject" , bloggerRequest)
+router.get("/webStatus",  getWebsiteStats);
 export default router;
