@@ -2,7 +2,7 @@ import User from "../models/userModel.js";
 import ReqEditor from "../models/editorReqModel.js";
 const getUsers = async (req, res) => {
   try {
-    const users = await User.find();
+    const users = await User.find().select("-password");
     res.json(users);
   } catch (err) {
     console.error(err);
@@ -12,19 +12,31 @@ const getUsers = async (req, res) => {
 
 const getUser = async (req, res) => {
   try {
-    const id = req.user.id;
+    const id = req?.user?.id;
+
+    if (!id) {
+      return res.status(400).json({
+        message: "Id not provided",
+      });
+    }
+
+    console.log(`[getUser] Received request with id: ${id}`);
+
     const user = await User.findById(id).select("-password");
+
     if (!user) {
-      return res.status(403).json({
+      return res.status(404).json({
         message: "User not found",
       });
     }
+
     return res.status(200).json(user);
   } catch (error) {
-    console.error(err);
+    console.error(`[getUser] Error: ${error.message}`);
     res.status(500).json({ message: "Server error" });
   }
 };
+
 const upgradeToEditor = async (req, res) => {
   try {
     const { id } = req.user.id;
@@ -37,7 +49,7 @@ const upgradeToEditor = async (req, res) => {
     user.role = "editor";
     await User.save();
   } catch (error) {
-    console.error(err);
+    console.error(error);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -52,23 +64,15 @@ const reqEditor = async (req, res) => {
       });
     }
 
-    // Check if a request already exists
-    const alreadyRequested = await ReqEditor.findOne({ userId: id });
-    if (alreadyRequested) {
+    const result = await ReqEditor.findOneAndUpdate(
+      { userId: id },
+      { $setOnInsert: { userId: id, username } },
+      { upsert: true, new: false }
+    );
+
+    if (result) {
       return res.status(409).json({
         message: "Request already sent!",
-      });
-    }
-
-    // Create a new editor request
-    const done = await ReqEditor.create({
-      userId: id,
-      username: username,
-    });
-
-    if (!done) {
-      return res.status(400).json({
-        message: "Failed to save request",
       });
     }
 
@@ -77,10 +81,28 @@ const reqEditor = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in reqEditor:", error.message);
-    res.status(500).json({
+    return res.status(500).json({
+      message: "Server error",
+    });
+  }
+};
+const getUserByUsername = async (req, res) => {
+  try {
+    const username = req.params.username;
+
+    const user = await User.findOne({
+      username: username,
+    }).select("-password -updatedAt -v");
+    res.status(200).json({
+      message: "Details fetched",
+      user,
+    });
+  } catch (error) {
+    console.error("Error in reqEditor:", error.message);
+    return res.status(500).json({
       message: "Server error",
     });
   }
 };
 
-export { getUsers, getUser, upgradeToEditor, reqEditor };
+export { getUsers, getUser, upgradeToEditor, reqEditor, getUserByUsername };
