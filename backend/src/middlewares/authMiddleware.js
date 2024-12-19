@@ -22,12 +22,12 @@ const authMiddleware = (req, res, next) => {
 
 const getTokenFromRequest = (req) => {
   const tokenFromCookie = req.cookies?.accessToken;
-  console.log(`Token from cookie: ${tokenFromCookie}`);
   
   const tokenFromHeader = req.header("Authorization")?.startsWith("Bearer ")
-    ? req.header("Authorization").split(" ")[1]
-    : null;
-
+  ? req.header("Authorization").split(" ")[1]
+  : null;
+  
+  console.log(`\nToken from cookie: ${tokenFromCookie} and token from Header ${tokenFromHeader} \n`);
   return tokenFromCookie || tokenFromHeader;
 };
 
