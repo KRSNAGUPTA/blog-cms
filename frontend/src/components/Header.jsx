@@ -1,10 +1,11 @@
 import React from "react";
 import { Github, Menu, User2Icon } from "lucide-react";
 import { AuthContext } from "@/context/AuthContext.jsx";
+import { useNavigate } from "react-router-dom";
 
 const Header = ({ toggleSidebar }) => {
   const { user, logout } = React.useContext(AuthContext);
-
+  const navigate = useNavigate();
   const handleLogout = () => {
     logout();
   };
@@ -25,6 +26,26 @@ const Header = ({ toggleSidebar }) => {
         </div>
         <nav>
           <ul className="flex space-x-6 items-center">
+            {user?.role ==="admin" ? (
+              <li>
+                <button
+                  className="border-b-2 border-purple-200 hover:border-purple-500 transform ease-in-out duration-700 "
+                  onClick={() => navigate("/dashboard")}
+                >
+                  Dashboard
+                </button>
+              </li>
+            ) : null}
+            {user?.role !=="reader" ? (
+              <li>
+                <button
+                  className="border-b-2 border-purple-200 hover:border-purple-500 transform ease-in-out duration-700 "
+                  onClick={() => navigate("/create")}
+                >
+                  Create Post
+                </button>
+              </li>
+            ) : null}
             <li>
               <a
                 href="https://github.com/KRSNAGUPTA/blog-cms"
