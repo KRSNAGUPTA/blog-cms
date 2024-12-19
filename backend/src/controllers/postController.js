@@ -1,20 +1,9 @@
 import Post from "../models/postModel.js";
 import User from "../models/userModel.js";
-import mongoose from "mongoose";
 import sanitizeMarkdown from "../utils/sanitizeMarkdown.js";
 
-// Utility function to validate object ID
-const isValidId = (id, res) => {
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    res.status(400).json({ message: "Invalid ID" });
-    return false;
-  }
-  return true;
-};
-
-// Utility function to find post by ID
-const findPostById = async (id, res) => {
-  const post = await Post.findById(id);
+const findPostBySlug = async (slug, res) => {
+  const post = await Post.findOne({ slug });
   if (!post) {
     res.status(404).json({ message: "Post not found" });
     return null;
@@ -22,7 +11,6 @@ const findPostById = async (id, res) => {
   return post;
 };
 
-// Utility function to check user permissions
 const checkUserPermissions = (post, user, res) => {
   if (post.author.toString() !== user.id && user.role !== "admin") {
     res.status(403).json({ message: "Access denied" });
@@ -31,7 +19,6 @@ const checkUserPermissions = (post, user, res) => {
   return true;
 };
 
-// Get all published posts
 const getAllPosts = async (req, res) => {
   try {
     const posts = await Post.find({ status: "publish" }).sort({
@@ -50,23 +37,11 @@ const getAllPosts = async (req, res) => {
   }
 };
 
-// Get a single post by ID with status check
-const getPostById = async (req, res) => {
+const getPostBySlug = async (req, res) => {
   try {
-    const { id } = req.params;
-
-    if (!isValidId(id, res)) return;
-
-    const post = await findPostById(id, res);
+    const { slug } = req.params;
+    const post = await findPostBySlug(slug, res);
     if (!post) return;
-
-    if (
-      post.status !== "publish" &&
-      post.author.toString() !== req.user.id &&
-      req.user.role !== "admin"
-    ) {
-      return res.status(403).json({ message: "Access denied" });
-    }
 
     res.status(200).json({ message: "Post retrieved successfully", post });
   } catch (error) {
@@ -75,11 +50,9 @@ const getPostById = async (req, res) => {
   }
 };
 
-// Create a new post
 const createPost = async (req, res) => {
   try {
     const { title, content, tags, coverImage, status } = req.body;
-
     if (!(title && content && status)) {
       return res
         .status(400)
@@ -90,17 +63,19 @@ const createPost = async (req, res) => {
       return res.status(400).json({ message: "Invalid status" });
     }
 
-    const authorUsername = await User.findById(req.user.id).select("username");
+    const author = await User.findById(req.user.id);
     const sanitizedContent = sanitizeMarkdown(content);
     const post = await Post.create({
       title,
       content: sanitizedContent,
       author: req.user.id,
       tags,
-      authorUsername: authorUsername.username,
+      authorUsername: author.username,
       coverImage,
-      status,
+      status
     });
+    author.totalPosts = Number(author.totalPosts) + 1
+    await author.save();
 
     res.status(201).json({ message: "Post created successfully", post });
   } catch (error) {
@@ -109,15 +84,12 @@ const createPost = async (req, res) => {
   }
 };
 
-// Update an existing post
 const updatePost = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { slug } = req.params;
     const { title, content, tags, coverImage, status } = req.body;
 
-    if (!isValidId(id, res)) return;
-
-    const post = await findPostById(id, res);
+    const post = await findPostBySlug(slug, res);
     if (!post) return;
 
     if (!checkUserPermissions(post, req.user, res)) return;
@@ -137,19 +109,16 @@ const updatePost = async (req, res) => {
   }
 };
 
-// Delete a post by ID
 const deletePost = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { slug } = req.params;
 
-    if (!isValidId(id, res)) return;
-
-    const post = await findPostById(id, res);
+    const post = await findPostBySlug(slug, res);
     if (!post) return;
 
     if (!checkUserPermissions(post, req.user, res)) return;
 
-    await Post.findByIdAndDelete(id);
+    await Post.findOneAndDelete({ slug });
     res.status(200).json({ message: "Post deleted successfully" });
   } catch (error) {
     console.error(error);
@@ -157,7 +126,6 @@ const deletePost = async (req, res) => {
   }
 };
 
-// Get posts created by a specific user
 const getUserPosts = async (req, res) => {
   try {
     const { username } = req.params;
@@ -166,7 +134,7 @@ const getUserPosts = async (req, res) => {
       return res.status(400).json({ message: "Username is required" });
     }
 
-    const user = await User.find({ username: username });
+    const user = await User.findOne({ username: username });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -183,15 +151,12 @@ const getUserPosts = async (req, res) => {
   }
 };
 
-// Like a post
 const likePost = async (req, res) => {
   try {
-    const postId = req.params.id;
+    const { slug } = req.params;
     const userId = req.user.id;
 
-    if (!isValidId(postId, res)) return;
-
-    const post = await findPostById(postId, res);
+    const post = await findPostBySlug(slug, res);
     if (!post) return;
 
     if (post.likes.includes(userId)) {
@@ -217,15 +182,12 @@ const likePost = async (req, res) => {
   }
 };
 
-// Dislike a post
 const dislikePost = async (req, res) => {
   try {
-    const postId = req.params.id;
+    const { slug } = req.params;
     const userId = req.user.id;
 
-    if (!isValidId(postId, res)) return;
-
-    const post = await findPostById(postId, res);
+    const post = await findPostBySlug(slug, res);
     if (!post) return;
 
     if (post.dislikes.includes(userId)) {
@@ -251,18 +213,16 @@ const dislikePost = async (req, res) => {
   }
 };
 
-// Comment on a post
 const commentOnPost = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { slug } = req.params;
     const { content } = req.body;
 
-    if (!isValidId(id, res)) return;
     if (!content) {
       return res.status(400).json({ message: "Comment is required" });
     }
 
-    const post = await findPostById(id, res);
+    const post = await findPostBySlug(slug, res);
     if (!post) return;
 
     post.comments.push({
@@ -277,20 +237,18 @@ const commentOnPost = async (req, res) => {
   }
 };
 
-// Modify an existing comment
 const modifyComment = async (req, res) => {
   try {
-    const id = req.params.id;
-    const { commentId, content } = req.body;
+    const { slug, commentId } = req.params;
+    const { content } = req.body;
 
-    if (!isValidId(id, res)) return;
     if (!(commentId && content)) {
       return res
         .status(400)
         .json({ message: "Comment ID and content are required" });
     }
 
-    const post = await findPostById(id, res);
+    const post = await findPostBySlug(slug, res);
     if (!post) return;
 
     const comment = post.comments.find(
@@ -312,18 +270,15 @@ const modifyComment = async (req, res) => {
   }
 };
 
-// Delete a comment
 const deleteComment = async (req, res) => {
   try {
-    const postId = req.params.id;
-    const { commentId } = req.body;
+    const { slug, commentId } = req.params;
 
-    if (!isValidId(postId, res)) return;
     if (!commentId) {
       return res.status(400).json({ message: "Comment ID is required" });
     }
 
-    const post = await findPostById(postId, res);
+    const post = await findPostBySlug(slug, res);
     if (!post) return;
 
     const comment = post.comments.find(
@@ -347,7 +302,7 @@ const deleteComment = async (req, res) => {
 
 export {
   getAllPosts,
-  getPostById,
+  getPostBySlug,
   createPost,
   updatePost,
   deletePost,
