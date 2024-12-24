@@ -12,7 +12,7 @@ const findPostBySlug = async (slug, res) => {
 };
 
 const checkUserPermissions = (post, user, res) => {
-  if (post.author.toString() !== user.id && user.role !== "admin") {
+  if (post.author != user.id && user.role !== "admin") {
     res.status(403).json({ message: "Access denied" });
     return false;
   }
@@ -21,9 +21,10 @@ const checkUserPermissions = (post, user, res) => {
 
 const getAllPosts = async (req, res) => {
   try {
+    console.log("Got inside");
     const posts = await Post.find({ status: "publish" }).sort({
-      likes: -1,
-      dislikes: 1,
+      likesCount: -1,
+      dislikesCount: 1,
     });
 
     if (!posts || posts.length === 0) {
@@ -42,7 +43,7 @@ const getPostBySlug = async (req, res) => {
     const { slug } = req.params;
     const post = await findPostBySlug(slug, res);
     if (!post) return;
-    console.log(post)
+    console.log(post);
     res.status(200).json({ message: "Post retrieved successfully", post });
   } catch (error) {
     console.error(error);
@@ -72,9 +73,9 @@ const createPost = async (req, res) => {
       tags,
       authorUsername: author.username,
       coverImage,
-      status
+      status,
     });
-    author.totalPosts = Number(author.totalPosts) + 1
+    author.totalPosts = Number(author.totalPosts) + 1;
     await author.save();
 
     res.status(201).json({ message: "Post created successfully", post });
