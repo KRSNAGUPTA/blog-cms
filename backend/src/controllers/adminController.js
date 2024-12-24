@@ -32,8 +32,8 @@ const changeRole = async (req, res) => {
 };
 const getWebsiteStats = async (req, res) => {
   try {
-    const users = await User.find().select("-password"); // Fetch all users excluding passwords
-    const posts = await Post.find(); // Fetch all posts
+    const users = await User.find().select("-password");
+    const posts = await Post.find();
 
     const websiteStats = {
       totalUsers: users.length,
@@ -60,13 +60,35 @@ const bloggerRequest = async (req, res) => {
       });
     }
     res.status(200).json({
-      message:"Fetched All request",
-      requests
-    })
+      message: "Fetched All request",
+      requests,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
   }
 };
+const deleteUser = async (req, res) => {
+  try {
+    console.log("Got request");
+    const { username } = req.body;
+    console.log(`Username ${username}`);
+    if (!username) {
+      return res.status(400).json({
+        message: "Username not provided",
+      });
+    }
+    console.log(`Got username ${username}`);
+    const deleted = await User.findOneAndDelete({ username:username });
+    if (!deleted) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-export { changeRole, getWebsiteStats, bloggerRequest };
+    return res.status(200).json({ message: "User deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting user:", error.message);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export { changeRole, getWebsiteStats, bloggerRequest, deleteUser };

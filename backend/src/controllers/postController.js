@@ -42,7 +42,7 @@ const getPostBySlug = async (req, res) => {
     const { slug } = req.params;
     const post = await findPostBySlug(slug, res);
     if (!post) return;
-
+    console.log(post)
     res.status(200).json({ message: "Post retrieved successfully", post });
   } catch (error) {
     console.error(error);
@@ -227,6 +227,7 @@ const commentOnPost = async (req, res) => {
 
     post.comments.push({
       user: req.user.id,
+      username: req.user.username,
       comment: sanitizeMarkdown(content),
     });
     await post.save();
