@@ -11,7 +11,7 @@ const postSchema = new mongoose.Schema(
       required: true,
     },
     authorUsername: { type: String },
-    slug: { type: String, unique: true},
+    slug: { type: String, unique: true },
     tags: [{ type: String, trim: true }],
     status: {
       type: String,
@@ -26,6 +26,7 @@ const postSchema = new mongoose.Schema(
     comments: [
       {
         user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        username: { type: String, required: true },
         comment: { type: String, required: true },
         createdAt: { type: Date, default: Date.now },
       },
