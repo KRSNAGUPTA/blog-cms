@@ -47,8 +47,7 @@ const Login = () => {
       if (response.status === 200) {
         toast({
           title: "Login Successful",
-          description: "Redirecting to dashboard...",
-          variant: "success",
+          description: "Redirecting to BlogHub...",
         });
         const { token } = response.data;
         login(token);
