@@ -1,49 +1,53 @@
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import HomePage from "./pages/HomePage";
+import { lazy, Suspense } from 'react';
 import { AuthProvider } from "./context/AuthContext";
-import Login from "./pages/Login";
-import NotFound from "./pages/NotFound";
-import SignUp from "./pages/SignUp";
-import ProfilePage from "./pages/Profile";
 import ProtectedRoute from "./utils/ProtectedRoute";
-import CreateBlogPage from "./pages/CreatePost";
-import PostPage from "./pages/PostPage";
 import AdminRoute from "./utils/AdminRoutes";
-import AdminDashboard from "./pages/AdminDashboard";
+
+// Lazy load components
+const HomePage = lazy(() => import("./pages/HomePage"));
+const Login = lazy(() => import("./pages/Login"));
+const SignUp = lazy(() => import("./pages/SignUp"));
+const ProfilePage = lazy(() => import("./pages/Profile"));
+const CreateBlogPage = lazy(() => import("./pages/CreatePost"));
+const PostPage = lazy(() => import("./pages/PostPage"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 function App() {
   return (
     <>
       <AuthProvider>
         <Router>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="/post/:slug" element={<PostPage />} />
-            <Route path="/u/:username" element={<ProfilePage />} />
-            <Route
-              path="/create"
-              element={
-                <ProtectedRoute>
-                  <CreateBlogPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <AdminRoute>
-                    <AdminDashboard />
-                  </AdminRoute>
-                </ProtectedRoute>
-              }
-            />
-
-            <Route path="/*" element={<NotFound />} />
-          </Routes>
+          <Suspense fallback={<div>Loading...</div>}>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<SignUp />} />
+              <Route path="/post/:slug" element={<PostPage />} />
+              <Route path="/u/:username" element={<ProfilePage />} />
+              <Route
+                path="/create"
+                element={
+                  <ProtectedRoute>
+                    <CreateBlogPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <AdminRoute>
+                      <AdminDashboard />
+                    </AdminRoute>
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="/*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
         </Router>
       </AuthProvider>
     </>
