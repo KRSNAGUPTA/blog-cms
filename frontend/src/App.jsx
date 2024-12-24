@@ -11,7 +11,6 @@ import CreateBlogPage from "./pages/CreatePost";
 import PostPage from "./pages/PostPage";
 import AdminRoute from "./utils/AdminRoutes";
 import AdminDashboard from "./pages/AdminDashboard";
-import UserPublicAdminProfile from "./pages/UserPublicAdminProfile";
 
 function App() {
   return (
@@ -23,20 +22,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/post/:slug" element={<PostPage />} />
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <ProfilePage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/u/:username"
-              element={
-                  <UserPublicAdminProfile />
-              }
-            />
+            <Route path="/u/:username" element={<ProfilePage />} />
             <Route
               path="/create"
               element={
