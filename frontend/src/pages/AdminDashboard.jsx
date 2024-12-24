@@ -176,7 +176,6 @@ function AdminDashboard() {
         description: error.response?.data?.message || "Please try again later",
         variant: "destructive",
       });
-      console.log(error);
     }
   };
 
@@ -284,8 +283,6 @@ function AdminDashboard() {
       const res = await api.delete("/api/admin/delete-user", {
         data: { username: userName },
       });
-
-      console.log(`Got response ${res}`);
       if (res.status == 200) {
         toast({
           title: `User deleted!`,

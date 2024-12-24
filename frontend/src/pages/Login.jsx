@@ -23,7 +23,8 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { login } = useContext(AuthContext); 
+  const { login } = useContext(AuthContext);
+
   const onSubmit = async (event) => {
     event.preventDefault();
 
@@ -63,10 +64,15 @@ const Login = () => {
       setIsLoading(false);
     }
   };
+  const handleGoogle = () => {
+    return toast({
+      title: "Google Login coming soon...",
+    });
+  };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <Card className="w-[450px]">
+    <div className="flex items-center justify-center min-h-screen bg-gray-100 px-4 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-semibold">
             Log <span className="text-purple-500">In</span>
@@ -77,15 +83,13 @@ const Login = () => {
         </CardHeader>
 
         <CardContent className="grid gap-4">
-          {/* Google Login Button */}
           <div className="grid grid-cols-1 gap-6">
-            <Button variant="outline" className="w-full">
-              <GoalIcon className="mr-2 h-4 w-4" />
+            <Button variant="outline" className="w-full" onClick={handleGoogle}>
+              <GoalIcon className="mr-1 h-4 w-4" />
               Google
             </Button>
           </div>
 
-          {/* Divider */}
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t" />
@@ -97,7 +101,6 @@ const Login = () => {
             </div>
           </div>
 
-          {/* Username/Email Input */}
           <div className="flex flex-col space-y-2">
             <Label
               htmlFor="usernameOrEmail"
@@ -115,7 +118,6 @@ const Login = () => {
             />
           </div>
 
-          {/* Password Input */}
           <div className="flex flex-col space-y-2">
             <Label
               htmlFor="password"
