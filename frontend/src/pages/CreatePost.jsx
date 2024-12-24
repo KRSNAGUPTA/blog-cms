@@ -6,9 +6,7 @@ import { toast } from "../hooks/use-toast";
 import Header from "@/components/Header";
 import api from "@/api/api";
 import { ToastAction } from "@/components/ui/toast";
-import { Jodit } from "jodit";
 import JoditEditor from "jodit-react";
-
 
 const CreatePostPage = () => {
   const { user } = useContext(AuthContext);
@@ -17,6 +15,7 @@ const CreatePostPage = () => {
   const [content, setContent] = useState(""); 
   const navigate = useNavigate();
   const editor = useRef(null);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title) {
@@ -76,7 +75,7 @@ const CreatePostPage = () => {
       <Header />
       <main className="container mx-auto px-6 py-12 relative">
         <div className="text-center mt-10 z-10 relative">
-          <h1 className="text-5xl font-extrabold text-gray-800 mb-4">
+          <h1 className="text-3xl md:text-5xl font-extrabold text-gray-800 mb-4">
             Create Your New Blog Post
           </h1>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto mb-8">
@@ -100,18 +99,17 @@ const CreatePostPage = () => {
             />
           </div>
 
-          {/* Content Editor */}
           <div className="mb-4">
             <label className="block text-lg font-medium text-gray-700 mb-2">
               Content
             </label>
             <JoditEditor
-            ref={editor}
-            value={content}
-            onChange={(val)=>setContent(val)}/>
+              ref={editor}
+              value={content}
+              onChange={(val) => setContent(val)}
+            />
           </div>
 
-          {/* Tags */}
           <div className="mb-4">
             <label className="block text-lg font-medium text-gray-700 mb-2">
               Tags (comma-separated)
@@ -125,7 +123,6 @@ const CreatePostPage = () => {
             />
           </div>
 
-          {/* Submit Button */}
           <div className="text-center">
             <button
               type="submit"
@@ -136,7 +133,6 @@ const CreatePostPage = () => {
           </div>
         </form>
 
-        {/* Footer Section */}
         <div className="text-center mt-16">
           <p className="text-lg text-gray-600 pb-4">
             Have questions? Reach out to us for{" "}

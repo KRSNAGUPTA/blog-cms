@@ -7,18 +7,18 @@ function NotFoundPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-gray-100 via-white to-gray-50 bg-cover bg-no-repeat">
-      <main className="container mx-auto px-6 py-12 flex justify-center items-center h-screen flex-col">
-        <div className="text-center">
-          <h1 className="text-6xl font-extrabold text-gray-800 mb-4">
-            404 <span className="text-purple-500">Page Not Found</span>
+      <main className="container mx-auto px-4 sm:px-6 py-8 sm:py-12 flex justify-center items-center h-screen flex-col">
+        <div className="text-center w-full max-w-4xl">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-gray-800 mb-4">
+            404 <span className="text-purple-500 block sm:inline">Page Not Found</span>
           </h1>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto px-4">
             Sorry, the page you're looking for doesn't exist or has been moved.
           </p>
-          <div className="flex items-center justify-center h-20 mt-6 mb-20">
-            <div className="flex space-x-8">
+          <div className="flex items-center justify-center h-16 sm:h-20 mt-4 sm:mt-6 mb-12 sm:mb-20">
+            <div className="flex space-x-4 sm:space-x-8">
               <svg
-                className="w-10 h-10"
+                className="w-8 h-8 sm:w-10 sm:h-10"
                 viewBox="0 0 68 79"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
@@ -34,7 +34,7 @@ function NotFoundPage() {
                 />
               </svg>
               <svg
-                className="w-10 h-10"
+                className="w-8 h-8 sm:w-10 sm:h-10"
                 viewBox="0 0 64 68"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
@@ -49,13 +49,13 @@ function NotFoundPage() {
             </div>
           </div>
         </div>
-        <div className="text-center mt-16">
+        <div className="text-center mt-8 sm:mt-16">
           <button
             onClick={() => {
               console.log("Button clicked!");
               navigate("/");
             }}
-            className="bg-purple-400 text-white py-3 mb-8 px-8 rounded-full font-medium transition-transform duration-300 hover:scale-105 hover:bg-purple-700 cursor-pointer z-20"
+            className="bg-purple-400 text-white py-2 sm:py-3 px-6 sm:px-8 rounded-full font-medium transition-transform duration-300 hover:scale-105 hover:bg-purple-700 cursor-pointer z-20 text-sm sm:text-base"
           >
             Go Back Home
           </button>
