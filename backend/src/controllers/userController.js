@@ -1,4 +1,5 @@
 import User from "../models/userModel.js";
+import Post from "../models/postModel.js";
 import ReqEditor from "../models/editorReqModel.js";
 const getUsers = async (req, res) => {
   try {
@@ -69,19 +70,26 @@ const upgradeToEditor = async (req, res) => {
 const rejectUpgrade = async (req, res) => {
   try {
     const { username } = req.body;
-    const user = await User.findOne(username);
+
+    const user = await User.findOne({ username });
     if (!user) {
       return res.status(401).json({
         message: "User not found",
       });
     }
-    const isDeleted = await ReqEditor.findByIdAndDelete(id);
-    if (!isDeleted) {
+    console.log(`Got username ${username} & ${user}`);
+
+    const deletedRequest = await ReqEditor.findOneAndDelete({
+      username: username,
+    });
+
+    if (!deletedRequest) {
       return res.status(400).json({
         message: "Failed to reject",
       });
     }
-    return res.status(200).jaon({
+
+    return res.status(200).json({
       message: "Request is rejected successfully",
     });
   } catch (error) {
@@ -135,11 +143,38 @@ const getUserByUsername = async (req, res) => {
     const user = await User.findOne({
       username: username,
     }).select("-password -updatedAt -v");
+    if (!user) {
+      console.log(`userByUsername: ${username} not found`);
+      return res.status(403).json({
+        message: "User not found",
+      });
+      XMLDocument;
+    }
     console.log(`Got user details with username : ${user}`);
     res.status(200).json({
       message: "Details fetched",
       user,
     });
+  } catch (error) {
+    console.error("Error in reqEditor:", error.message);
+    return res.status(500).json({
+      message: "Server error",
+    });
+  }
+};
+const handleSearch = async (req, res) => {
+  try {
+    const { searchTerm } = req.body;
+    if (!searchTerm) {
+      return res.status(400).json({
+        message: "No search term found",
+      });
+    }
+    const user = await User.find({
+      username: searchTerm,
+    });
+
+    const post = await Post.s;
   } catch (error) {
     console.error("Error in reqEditor:", error.message);
     return res.status(500).json({
@@ -155,4 +190,5 @@ export {
   reqEditor,
   getUserByUsername,
   rejectUpgrade,
+  handleSearch,
 };
