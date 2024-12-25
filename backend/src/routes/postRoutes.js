@@ -11,6 +11,7 @@ import {
   commentOnPost,
   modifyComment,
   deleteComment,
+  search,
 } from "../controllers/postController.js";
 import authorizeRole from "../middlewares/roalMiddleware.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
@@ -20,6 +21,7 @@ const router = Router();
 router.get("/u/:username", getUserPosts); 
 
 router.get("/", getAllPosts);
+router.get("/search/:search", search);
 router.get("/:slug", getPostBySlug);
 router.post("/", authMiddleware, authorizeRole("admin", "editor"), createPost);
 router.patch("/:slug", authMiddleware, authorizeRole("admin", "editor"), updatePost);
