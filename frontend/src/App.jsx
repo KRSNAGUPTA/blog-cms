@@ -13,20 +13,23 @@ const ProfilePage = lazy(() => import("./pages/Profile"));
 const CreateBlogPage = lazy(() => import("./pages/CreatePost"));
 const PostPage = lazy(() => import("./pages/PostPage"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const Support = lazy(() => import("./pages/SupportPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const LoadingComponent = lazy(()=>import("./components/Loading"))
 
 function App() {
   return (
     <>
       <AuthProvider>
         <Router>
-          <Suspense fallback={<div>Loading...</div>}>
+          <Suspense fallback={<LoadingComponent/>}>
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<SignUp />} />
               <Route path="/post/:slug" element={<PostPage />} />
               <Route path="/u/:username" element={<ProfilePage />} />
+              <Route path="/support" element={<Support />} />
               <Route
                 path="/create"
                 element={
