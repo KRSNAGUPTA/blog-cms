@@ -301,6 +301,42 @@ const deleteComment = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+const search = async (req, res) => {
+  try {
+    const searchTerm = req.params.search;
+
+    if (!searchTerm) {
+      return res.status(400).json({
+        message: "Search text not provided",
+      });
+    }
+
+    const posts = await Post.find({
+      $or: [
+        { title: { $regex: searchTerm, $options: "i" } },
+        { content: { $regex: searchTerm, $options: "i" } },
+        { authorUsername: { $regex: searchTerm, $options: "i" } },
+      ],
+    }).select("-password");
+
+    const users = await User.find({
+      $or: [
+        { username: { $regex: searchTerm, $options: "i" } },
+        { name: { $regex: searchTerm, $options: "i" } },
+      ],
+    });
+
+    return res.status(200).json({
+      message: "Search result",
+      posts,
+      users,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 
 export {
   getAllPosts,
@@ -314,4 +350,5 @@ export {
   commentOnPost,
   modifyComment,
   deleteComment,
+  search,
 };
