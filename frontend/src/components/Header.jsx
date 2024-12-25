@@ -4,6 +4,7 @@ import { AuthContext } from "@/context/AuthContext.jsx";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
+import { Button } from "./ui/button";
 
 const Header = ({ toggleSidebar }) => {
   const { user, logout } = React.useContext(AuthContext);
@@ -20,6 +21,9 @@ const Header = ({ toggleSidebar }) => {
       if (!searchTerm) {
         return;
       }
+      toast({
+        title: "Search feature coming soon!",
+      });
     } catch (error) {
       toast({
         title: "Failed to Search",
@@ -49,10 +53,12 @@ const Header = ({ toggleSidebar }) => {
             placeholder="Search"
             onChange={(e) => {
               setSearchTerm(e.target.value);
-              handleSearch();
             }}
           />
-          <Search className="z-2 text-purple-500" />
+            <Search
+              onClick={() => handleSearch()}
+              className="z-2 text-purple-500 cursor-pointer"
+            />
         </div>
 
         <nav className="hidden sm:flex">
@@ -120,7 +126,9 @@ const Header = ({ toggleSidebar }) => {
           <ul className="space-y-4">
             {user?.role === "admin" && (
               <li>
-                <button onClick={() => navigate("/dashboard")}>Dashboard</button>
+                <button onClick={() => navigate("/dashboard")}>
+                  Dashboard
+                </button>
               </li>
             )}
             {user?.role !== "reader" && (
