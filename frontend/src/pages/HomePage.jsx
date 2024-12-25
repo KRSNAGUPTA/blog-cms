@@ -24,10 +24,6 @@ function HomePage() {
         const res = await api.get("/api/posts/");
         setPosts(res?.data.posts);
       } catch (error) {
-        toast({
-          title: "Error while loading posts",
-          description: `${error?.message}`,
-        });
         topPost();
       }
     };
