@@ -4,6 +4,14 @@ import { AuthContext } from "@/context/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import api from "@/api/api";
 import { useNavigate } from "react-router-dom";
+import {
+  Card,
+  CardDescription,
+  CardFooter,
+  CardTitle,
+} from "@/components/ui/card";
+import { PanelTopOpen } from "lucide-react";
+import { Toaster } from "@/components/ui/toaster";
 
 function HomePage() {
   const { user } = useContext(AuthContext);
@@ -20,6 +28,7 @@ function HomePage() {
           title: "Error while loading posts",
           description: `${error?.message}`,
         });
+        topPost();
       }
     };
 
@@ -29,6 +38,7 @@ function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-r from-gray-100 via-white to-gray-50">
       <Header />
+      <Toaster/>
       <main className="container mx-auto px-6 py-12">
         <div className="text-center mt-24 sm:mt-32 lg:mt-64">
           {user ? (
@@ -64,22 +74,26 @@ function HomePage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-36">
           {posts.map((post) => (
-            <div key={post.slug} className="container bg-white p-6 rounded-lg shadow-md">
-              <h3 className="font-semibold text-center">{post.title}</h3>
-              <p
-                className="text-sm text-gray-600"
-                dangerouslySetInnerHTML={{
-                  __html: post.content.slice(0, 300) + "...",
-                }}
-              />
-              <p className="text-sm text-purple-800">By {post.authorUsername}</p>
-              <a
-                href={`/post/${post.slug}`}
-                className="text-purple-500 hover:underline"
-              >
-                Read more
-              </a>
-            </div>
+            <Card
+              key={post?.slug}
+              className="p-2 cursor-pointer hover:shadow-lg transition-all ease-in-out duration-500"
+              onClick={() => navigate(`/post/${post.slug}`)}
+            >
+              <CardTitle className="text-center mt-2 mb-2">
+                {post?.title}
+              </CardTitle>
+              <CardDescription>
+                {
+                  <p
+                    className="p-2"
+                    dangerouslySetInnerHTML={{
+                      __html: post.content.slice(0, 300) + "...",
+                    }}
+                  />
+                }
+              </CardDescription>
+              {/* <CardFooter className="flex justify-center mt-4">{""}</CardFooter> */}
+            </Card>
           ))}
         </div>
 
