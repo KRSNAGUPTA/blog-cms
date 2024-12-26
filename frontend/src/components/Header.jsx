@@ -43,7 +43,7 @@ const Header = ({ toggleSidebar }) => {
             {menuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
           <a href="/">
-            <h1 className="text-2xl font-bold text-indigo-700">BlogHub</h1>
+            <h1 className="text-2xl font-bold text-indigo-700">Blog<span className="text-purple-500">Hub</span></h1>
           </a>
         </div>
 
